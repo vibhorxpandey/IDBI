@@ -95,6 +95,9 @@ INCOME_GROUND_TRUTH_CSV = SYNTHETIC_DIR / "income_ground_truth.csv"
 INCOME_MODEL_PKL = BASE_DIR / "engines" / "income_engine" / "model.pkl"
 INTENT_PROPENSITY_PKL = BASE_DIR / "engines" / "intent_engine" / "propensity.pkl"
 INTENT_UPLIFT_PKL = BASE_DIR / "engines" / "intent_engine" / "uplift.pkl"
+# Plain (uncalibrated) XGB on P(convert|contacted), saved purely so SHAP
+# TreeExplainer has a clean tree model for Engine B reason codes (Part 5).
+INTENT_EXPLAINER_PKL = BASE_DIR / "engines" / "intent_engine" / "intent_explainer.pkl"
 
 # Stage outputs (Global Rule 7 — each stage writes, next stage reads)
 INCOME_SCORES_JSON = PROCESSED_DIR / "income_scores.json"

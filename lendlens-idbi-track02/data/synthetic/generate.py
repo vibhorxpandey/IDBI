@@ -152,12 +152,14 @@ def build_master(n: int) -> pd.DataFrame:
     emp_risk = np.select(
         [employment == "salaried", employment == "self_employed", employment == "gig"],
         [-0.40, 0.15, 0.50])
+    # Noise term deliberately sized so the model lands at a realistic,
+    # bank-credible AUC (~0.80) rather than an implausibly separable one.
     risk = (
-        -0.9 * (credit_bureau_score - 720) / 70
-        + 1.6 * (foir_true - 0.20)
-        - 0.4 * (np.log(true_income) - np.log(50000))
+        -0.8 * (credit_bureau_score - 720) / 70
+        + 1.4 * (foir_true - 0.20)
+        - 0.35 * (np.log(true_income) - np.log(50000))
         + emp_risk
-        + rng.normal(0, 0.8, n)
+        + rng.normal(0, 1.6, n)
     )
     defaulted = (risk > np.quantile(risk, 0.92)).astype(int)  # ~8%
 
@@ -355,7 +357,31 @@ def build_transactions(df: pd.DataFrame, beh: pd.DataFrame) -> pd.DataFrame:
         "direction": dirs,
         "narration": narrs,
     })
+    txns = _add_transaction_times(txns, df)
     return txns.sort_values(["customer_id", "date"]).reset_index(drop=True)
+
+
+def _add_transaction_times(txns: pd.DataFrame, master: pd.DataFrame) -> pd.DataFrame:
+    """Attach a time-of-day to each transaction, drawn around a per-customer peak
+    active hour, so Engine B (Part 4) can recover a real 'best time to contact'.
+
+    Uses a dedicated RNG stream (RANDOM_STATE + 4) so transaction amounts/dates
+    from the main generator are left byte-identical — only a time is appended.
+    """
+    rng = np.random.default_rng(config.RANDOM_STATE + 4)
+    peak_choices = np.array([10, 12, 14, 17, 19, 20])          # daytime/evening
+    peak_p = np.array([0.15, 0.20, 0.20, 0.20, 0.15, 0.10])
+    ids = master["customer_id"].values
+    peak_map = dict(zip(ids, peak_choices[rng.choice(len(peak_choices),
+                                                      size=len(ids), p=peak_p)]))
+    peaks = txns["customer_id"].map(peak_map).to_numpy()
+    hours = np.clip(np.round(rng.normal(peaks, 2.0)), 6, 23).astype(int)
+    mins = rng.integers(0, 60, len(txns))
+    hh = pd.Series(hours, index=txns.index).map("{:02d}".format)
+    mm = pd.Series(mins, index=txns.index).map("{:02d}".format)
+    txns = txns.copy()
+    txns["date"] = txns["date"] + " " + hh + ":" + mm
+    return txns
 
 
 # ---------------------------------------------------------------------------
@@ -377,19 +403,30 @@ def build_treatment(df: pd.DataFrame, beh: pd.DataFrame) -> pd.DataFrame:
                   + beh["auto_loan_page_visits"].values
                   + beh["personal_loan_page_visits"].values
                   + 0.5 * beh["emi_calculator_uses"].values)
-    intent = np.clip(intent_raw / 6.0, 0, 1)
+    intent = np.clip(intent_raw / 5.0, 0, 1)
     recency = np.exp(-beh["days_since_last_visit"].values / 30.0)
 
-    # Baseline conversion (would happen even without contact).
-    base = 1.0 / (1.0 + np.exp(-(-2.3 + 1.6 * intent + 0.8 * afford + 0.9 * recency)))
-    # Persuadables: strong intent + recent + affordable. We suppress their base
-    # so that *contact* is what tips them over — that is the uplift.
-    persuadable = intent * recency * afford
-    base = base * (1 - 0.55 * persuadable)
-    uplift_true = 0.40 * persuadable
+    # Baseline conversion (would happen even WITHOUT contact): low and driven
+    # mostly by affordability + engagement, deliberately NOT by intent — so the
+    # uplift signal stays cleanly separated from the base rate.
+    base = np.clip(0.04 + 0.12 * afford + 0.06 * recency, 0.02, 0.35)
+
+    # Uplift concentrated in genuine persuadables (strong, recent intent): the
+    # incremental conversion that outreach *causes*. Sure-things convert anyway;
+    # lost-causes never do; only these respond to a call.
+    persuadable = (intent ** 0.8) * recency
+    # Life events are real triggers: a lease renewal / rising rent / car service /
+    # high-cost EMI makes a customer materially more persuadable right now. Giving
+    # them direct effect (not only via page visits) means the models — and SHAP —
+    # can legitimately surface "Lease renewal detected" as a reason.
+    life_event_trigger = (0.20 * beh["lease_renewal_flag"].values
+                          + 0.15 * beh["rising_rent_flag"].values
+                          + 0.15 * beh["car_servicing_flag"].values
+                          + 0.12 * beh["high_cost_emi_flag"].values) * recency
+    uplift_true = 0.30 * persuadable + 0.22 * life_event_trigger
 
     contacted = rng.binomial(1, 0.5, n)
-    p_convert = np.clip(base + contacted * uplift_true, 0, 0.97)
+    p_convert = np.clip(base + contacted * uplift_true, 0, 0.95)
     converted = rng.binomial(1, p_convert)
 
     return pd.DataFrame({
