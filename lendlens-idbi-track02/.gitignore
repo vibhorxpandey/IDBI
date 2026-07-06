@@ -1,0 +1,29 @@
+# --- Python ---
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+
+# --- Models & generated artefacts (reproducible via `make all`) ---
+*.pkl
+data/synthetic/*.csv
+data/processed/*
+!data/processed/.gitkeep
+docs/uplift_curve.png
+
+# --- Optional raw dataset (large, user-supplied) ---
+data/raw/*.csv
+
+# --- Node / dashboard ---
+node_modules/
+dashboard/dist/
+dashboard/.vite/
+
+# --- Editors / OS ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+.env
