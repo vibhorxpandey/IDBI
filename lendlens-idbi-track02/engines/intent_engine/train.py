@@ -11,6 +11,7 @@ The deployed scoring model is then refit on all data.
 """
 from __future__ import annotations
 
+import json
 import pickle
 
 import numpy as np
@@ -53,6 +54,16 @@ def main() -> None:
     ate = float(y[t == 1].mean() - y[t == 0].mean())
     up.save_uplift_curve(decile, ate)
     qini = up.qini_coefficient(oof, t, y)
+
+    # Decile data for the dashboard's Recharts uplift panel (Part 8).
+    with open(config.UPLIFT_CURVE_JSON, "w", encoding="utf-8") as fh:
+        json.dump({
+            "ate": round(ate, 4),
+            "qini": round(qini, 4) if qini is not None else None,
+            "deciles": [{"decile": int(r.decile),
+                         "observed_uplift": round(float(r.observed_uplift), 4),
+                         "n": int(r.n)} for r in decile.itertuples(index=False)],
+        }, fh, ensure_ascii=False, indent=2)
 
     up_final = up.make_uplift_model().fit(X, y, t)
     with open(config.INTENT_UPLIFT_PKL, "wb") as fh:

@@ -7,14 +7,14 @@
 ## Result: ✅ PASS
 
 - **Disparate-impact ratio:** 0.983 (min group rate ÷ max group rate)
-- **Leads selected:** 1,783 of 5,000
+- **Leads selected:** 1,768 of 5,001
 
 ### Selection rate by group
 
 | Group | Selection rate |
 | --- | --- |
-| F | 35.3% |
-| M | 36.0% |
+| F | 35.0% |
+| M | 35.6% |
 
 No adjustment required — the 80% rule is satisfied as-is.
 

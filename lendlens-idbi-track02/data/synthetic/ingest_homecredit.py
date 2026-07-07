@@ -75,8 +75,18 @@ def load_master(n: int) -> pd.DataFrame:
     companies = [f"EMPLOYER{i:03d}" for i in range(240)]
     employer = np.array([companies[i] for i in rng.integers(0, len(companies), m)])
 
+    from faker import Faker
+    faker_id = Faker("en_IN")
+    faker_id.seed_instance(config.RANDOM_STATE + 100)
+    names = np.array([faker_id.name() for _ in range(m)])
+    city_pool = np.array(["Mumbai", "Delhi", "Bengaluru", "Chennai", "Pune",
+                          "Jaipur", "Lucknow", "Indore", "Nagpur", "Surat"])
+    cities = city_pool[rng.integers(0, len(city_pool), m)]
+
     master = pd.DataFrame({
         "customer_id": [f"CUST_{i:05d}" for i in range(1, m + 1)],
+        "name": names,
+        "city": cities,
         "age": age.values,
         "gender": gender.values,
         "employment_type": employment_type,

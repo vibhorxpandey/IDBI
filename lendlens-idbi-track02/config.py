@@ -53,18 +53,21 @@ TIER_GOLD_UPLIFT = 0.05        # Gold needs clearly positive uplift
 #   tenor_years  = default tenor for the pre-approved offer
 #   max_amount   = product ceiling (INR) so offers stay realistic
 # ---------------------------------------------------------------------------
+# rate = indicative annual interest; tenor_years = default offer tenor;
+# max_amount = product ceiling (INR); income_multiple = conservative pre-approved
+# starting offer expressed as a multiple of verified ANNUAL income (Part 6/9).
 PRODUCTS = {
-    "Home":     {"rate": 0.085, "tenor_years": 20, "max_amount": 5_00_00_000},
-    "Auto":     {"rate": 0.095, "tenor_years": 7,  "max_amount":   25_00_000},
-    "Personal": {"rate": 0.130, "tenor_years": 5,  "max_amount":   40_00_000},
-    "Mortgage": {"rate": 0.090, "tenor_years": 15, "max_amount": 3_00_00_000},
+    "Home":     {"rate": 0.085, "tenor_years": 20, "max_amount": 5_00_00_000, "income_multiple": 1.10},
+    "Auto":     {"rate": 0.095, "tenor_years": 7,  "max_amount":   25_00_000, "income_multiple": 0.60},
+    "Personal": {"rate": 0.130, "tenor_years": 5,  "max_amount":   40_00_000, "income_multiple": 0.50},
+    "Mortgage": {"rate": 0.090, "tenor_years": 15, "max_amount": 3_00_00_000, "income_multiple": 1.50},
 }
 
-# Conservative pre-approved starting offer: even when a customer can afford a
-# much larger EMI, the *pre-approved* headline amount is capped to a prudent
-# fraction of the max affordable principal (Part 6/9). Keeps offers credible
-# and gives the RM room to upsell after full underwriting.
-PREAPPROVED_OFFER_FACTOR = 0.55
+# The pre-approved *headline* offer is intentionally conservative: the LOWER of
+# (a) what the FOIR-capped max affordable EMI supports, and (b) a modest multiple
+# of verified annual income (income_multiple above), also within the product cap.
+# Full affordability is unlocked only after underwriting — this keeps the
+# pre-approved starting number credible (and lands Priya's home loan near ₹18L).
 
 # ---------------------------------------------------------------------------
 # Canonical demo persona (Part 9)
@@ -104,10 +107,12 @@ INCOME_SCORES_JSON = PROCESSED_DIR / "income_scores.json"
 INTENT_SCORES_JSON = PROCESSED_DIR / "intent_scores.json"
 REASON_CODES_JSON = PROCESSED_DIR / "reason_codes.json"
 FAIRNESS_SUMMARY_JSON = PROCESSED_DIR / "fairness_summary.json"
-LEADS_JSON = PROCESSED_DIR / "leads.json"
+LEADS_SCORED_JSON = PROCESSED_DIR / "leads_scored.json"  # tiers, pre-offer
+LEADS_JSON = PROCESSED_DIR / "leads.json"                # final, with offers
 
 # Docs / charts
 UPLIFT_CURVE_PNG = DOCS_DIR / "uplift_curve.png"
+UPLIFT_CURVE_JSON = PROCESSED_DIR / "uplift_curve.json"  # decile data for the dashboard
 FAIRNESS_REPORT_MD = DOCS_DIR / "fairness_report.md"
 
 # ---------------------------------------------------------------------------
@@ -155,8 +160,7 @@ if __name__ == "__main__":
     print(" Loan products")
     for name, p in PRODUCTS.items():
         print(f"  {name:<9}: {p['rate']:.2%}  {p['tenor_years']:>2}y  "
-              f"cap {_inr(p['max_amount'])}")
-    print(f"  Pre-approved offer factor : {PREAPPROVED_OFFER_FACTOR:.0%}")
+              f"cap {_inr(p['max_amount'])}  pre-appr {p['income_multiple']:.2f}× annual income")
     print("-" * 60)
     print(" Paths")
     print(f"  BASE_DIR       : {BASE_DIR}")

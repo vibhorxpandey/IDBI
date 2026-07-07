@@ -60,6 +60,13 @@ DISCRETIONARY = [
 ]
 CAR_BRANDS = ["MARUTI", "HYUNDAI", "TATA", "MAHINDRA", "TOYOTA", "HONDA"]
 
+# Tier-consistent city pools (display only) so a tier-1 customer shows a metro.
+TIER_CITIES = {
+    1: ["Mumbai", "Delhi", "Bengaluru", "Chennai", "Hyderabad", "Pune", "Kolkata"],
+    2: ["Jaipur", "Lucknow", "Indore", "Nagpur", "Coimbatore", "Bhopal", "Surat"],
+    3: ["Rohtak", "Guntur", "Bilaspur", "Karnal", "Hapur", "Anand", "Nadiad"],
+}
+
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -169,8 +176,23 @@ def build_master(n: int) -> pd.DataFrame:
     salary_day = rng.integers(1, 4, n)
     emi_bank = np.array([BANKS[i] for i in rng.integers(0, len(BANKS), n)])
 
+    # Display-only identity: name (Faker, isolated seed) + tier-consistent city.
+    # Isolated seeds so the numeric master RNG stream (income, default, ...) is
+    # untouched and stays byte-identical.
+    faker_id = Faker("en_IN")
+    faker_id.seed_instance(config.RANDOM_STATE + 100)
+    name = np.array([faker_id.name() for _ in range(n)])
+    rng_city = np.random.default_rng(config.RANDOM_STATE + 101)
+    city = np.empty(n, dtype=object)
+    for t in (1, 2, 3):
+        m = city_tier == t
+        pool = np.array(TIER_CITIES[t])
+        city[m] = pool[rng_city.integers(0, len(pool), int(m.sum()))]
+
     return pd.DataFrame({
         "customer_id": customer_id,
+        "name": name,
+        "city": city,
         "age": age,
         "gender": gender,
         "employment_type": employment,
@@ -437,6 +459,83 @@ def build_treatment(df: pd.DataFrame, beh: pd.DataFrame) -> pd.DataFrame:
 
 
 # ---------------------------------------------------------------------------
+# Canonical demo customer — Priya (Part 9), seeded ADDITIVELY as row 5,001.
+#
+# She is appended AFTER the 5,000 are fully generated, using an isolated RNG
+# stream (RANDOM_STATE + 900), so the existing 5,000 rows stay byte-identical.
+# Her declared income (₹45k) is a fraction of her true recurring business
+# inflows (₹1.4L/month) — the exact gap Engine A recovers, and the spine of the
+# 3-minute demo: inferred ≈ ₹1.4L, Gold, Home, offer ~₹18L.
+# ---------------------------------------------------------------------------
+def _priya_master() -> pd.DataFrame:
+    return pd.DataFrame([{
+        "customer_id": config.PRIYA_ID, "name": "Priya Nair", "city": "Pune",
+        "age": 34, "gender": "F", "employment_type": "self_employed",
+        "city_tier": 1, "declared_income": 45000, "existing_emi": 5000,
+        "credit_bureau_score": 785, "defaulted": 0, "true_income": 140000,
+        "employer": "SELF-EMPLOYED", "salary_day": 1, "emi_bank": "HDFC",
+    }])
+
+
+def _priya_behaviour() -> pd.DataFrame:
+    return pd.DataFrame([{
+        "customer_id": config.PRIYA_ID, "emi_calculator_uses": 2,
+        "home_loan_page_visits": 3, "auto_loan_page_visits": 0,
+        "personal_loan_page_visits": 0, "app_sessions_30d": 14,
+        "days_since_last_visit": 2, "rising_rent_flag": 0,
+        "lease_renewal_flag": 1, "car_servicing_flag": 0,
+        "high_cost_emi_flag": 0, "salary_hike_flag": 0,
+        "is_renter": 1, "base_rent": 28000, "car_month": 0,
+    }])
+
+
+def _priya_treatment() -> pd.DataFrame:
+    # Placed in the positive-uplift segment (she responds to contact).
+    return pd.DataFrame([{"customer_id": config.PRIYA_ID,
+                          "contacted": 1, "converted": 1}])
+
+
+def _priya_transactions() -> pd.DataFrame:
+    """Six months of clustered UPI business inflows (~₹1.4L/month) plus rent
+    (lease-renewal step-up), a small EMI, and discretionary spend — same shape
+    as the other self-employed customers so income inference treats her alike."""
+    rng = np.random.default_rng(config.RANDOM_STATE + 900)
+    periods = _month_periods(AS_OF, config.TRANSACTION_MONTHS)
+    companies = _build_company_pool(240)
+    base_rent, spend_scale = 28000, 1.8
+    cust, dates, amts, dirs, narrs = [], [], [], [], []
+
+    def add(y, m, day, amount, direction, narration):
+        hour = int(np.clip(round(rng.normal(19, 1.5)), 6, 23))  # evening peak
+        add.mn = int(rng.integers(0, 60))
+        cust.append(config.PRIYA_ID)
+        dates.append(f"{y:04d}-{m:02d}-{min(int(day), 28):02d} {hour:02d}:{add.mn:02d}")
+        amts.append(int(round(amount)))
+        dirs.append(direction)
+        narrs.append(narration)
+
+    for mi, (y, m) in enumerate(periods):
+        total = 140000 * rng.uniform(0.97, 1.03)
+        for part in rng.dirichlet(np.ones(int(rng.integers(4, 7)))) * total:
+            client = companies[int(rng.integers(0, len(companies)))]
+            add(y, m, int(rng.integers(1, 28)), part, "credit", f"UPI/{client}")
+        rent = base_rent * (1.08 if mi >= 4 else 1.0)  # lease renewal step-up
+        add(y, m, 5, rent, "debit", "NEFT/RENT/HOUSING")
+        add(y, m, 7, 5000, "debit", "ACH/EMI/HDFC")
+        for _ in range(int(rng.integers(4, 7))):
+            template, brands, (lo, hi) = DISCRETIONARY[
+                int(rng.integers(0, len(DISCRETIONARY)))]
+            amount = rng.uniform(lo, hi) * spend_scale
+            narration = template.format(brands[int(rng.integers(0, len(brands)))]) \
+                if brands else template
+            add(y, m, int(rng.integers(1, 28)), amount, "debit", narration)
+
+    df = pd.DataFrame({"customer_id": cust, "date": dates, "amount": amts,
+                       "direction": dirs, "narration": narrs})
+    return df.sort_values("date").reset_index(drop=True)
+
+
+# ---------------------------------------------------------------------------
 # Orchestration
 # ---------------------------------------------------------------------------
 def generate() -> None:
@@ -457,9 +556,20 @@ def generate() -> None:
     transactions = build_transactions(master, behaviour)
     treatment = build_treatment(master, behaviour)
 
+    # Seed Priya additively (synthetic path only) — the 5,000 above are already
+    # finalised and untouched (Global Rule / byte-identical requirement).
+    if not using_homecredit:
+        master = pd.concat([master, _priya_master()], ignore_index=True)
+        behaviour = pd.concat([behaviour, _priya_behaviour()], ignore_index=True)
+        transactions = pd.concat([transactions, _priya_transactions()],
+                                 ignore_index=True)
+        treatment = pd.concat([treatment, _priya_treatment()], ignore_index=True)
+        print(f"[data] Seeded canonical demo customer {config.PRIYA_ID} "
+              f"(Priya Nair) additively -> {len(master):,} customers total")
+
     # --- project to public output tables (drop hidden/helper columns) ---
-    customer_cols = ["customer_id", "age", "gender", "employment_type",
-                     "city_tier", "declared_income", "existing_emi",
+    customer_cols = ["customer_id", "name", "age", "gender", "employment_type",
+                     "city", "city_tier", "declared_income", "existing_emi",
                      "credit_bureau_score", "defaulted"]
     # Home Credit path carries extra EXT_SOURCE_* columns — keep them if present.
     extra = [c for c in master.columns if c.startswith("ext_source")]

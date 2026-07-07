@@ -16,6 +16,14 @@ from __future__ import annotations
 import subprocess
 import sys
 
+# This launcher does not import config, so give it the same UTF-8 console fix
+# (stage labels contain non-ASCII like the em-dash).
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
+
 # (stage-key, human label, module to run with `-m`)
 STAGES: list[tuple[str, str, str]] = [
     ("data",    "Generate synthetic data",            "data.synthetic.generate"),
