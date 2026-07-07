@@ -11,7 +11,7 @@ __pycache__/
 data/synthetic/*.csv
 data/processed/*
 !data/processed/.gitkeep
-docs/uplift_curve.png
+# docs/uplift_curve.png is intentionally TRACKED — it's the README's hero image
 
 # --- Optional raw dataset (large, user-supplied) ---
 data/raw/*.csv
