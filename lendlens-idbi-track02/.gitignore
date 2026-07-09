@@ -36,3 +36,4 @@ Thumbs.db
 # --- Local scratch / bundles (not for the repo) ---
 *.zip
 gitignore-patch.txt
+.vercel

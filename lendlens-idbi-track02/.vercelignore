@@ -1,0 +1,14 @@
+# Keep the Vercel upload small — Vercel installs deps + builds remotely.
+.venv
+venv
+node_modules
+dashboard/node_modules
+dashboard/dist
+dashboard/.vite
+__pycache__
+**/__pycache__
+*.pkl
+data/synthetic
+data/raw
+notebooks
+*.zip

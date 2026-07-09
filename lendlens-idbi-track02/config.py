@@ -10,6 +10,7 @@ Run `python config.py` to print the active configuration.
 """
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -81,7 +82,9 @@ BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data"
 RAW_DIR = DATA_DIR / "raw"
 SYNTHETIC_DIR = DATA_DIR / "synthetic"
-PROCESSED_DIR = DATA_DIR / "processed"
+# Overridable so the deployed API can read JSON bundled at a different path
+# (e.g. on Vercel — see api/index.py).
+PROCESSED_DIR = Path(os.environ.get("LENDLENS_PROCESSED_DIR", str(DATA_DIR / "processed")))
 DOCS_DIR = BASE_DIR / "docs"
 
 # Optional Home Credit enrichment (Global Rule 1) — used only if present

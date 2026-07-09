@@ -1,14 +1,14 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "cd dashboard && npm install && npm run build",
+  "buildCommand": "cd dashboard && npm install && npm run build && mkdir -p dist/_data && cp ../data/processed/leads.json ../data/processed/fairness_summary.json ../data/processed/uplift_curve.json dist/_data/",
   "outputDirectory": "dashboard/dist",
   "functions": {
     "api/index.py": {
-      "includeFiles": "data/processed/**",
+      "includeFiles": "dashboard/dist/**",
       "maxDuration": 15
     }
   },
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/index" }
+    { "source": "/(.*)", "destination": "/api/index" }
   ]
 }
