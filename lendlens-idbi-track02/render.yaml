@@ -1,0 +1,35 @@
+# LendLens — one-file deploy for Render (https://render.com)
+# Put this at: lendlens-idbi-track02/render.yaml
+# In Render: New → Blueprint → pick this repo. Creates BOTH services.
+services:
+  # ---------- Backend API (FastAPI) ----------
+  - type: web
+    name: lendlens-api
+    runtime: python
+    rootDir: lendlens-idbi-track02
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    # data/processed/*.json are committed, so NO pipeline run needed at build.
+    startCommand: uvicorn api.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11"
+
+  # ---------- Frontend (Vite static site) ----------
+  - type: web
+    name: lendlens-dashboard
+    runtime: static
+    rootDir: lendlens-idbi-track02/dashboard
+    plan: free
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: lendlens-api
+          property: host   # auto-fills the API URL, no copy-paste
+    routes:
+      - type: rewrite       # SPA fallback so refresh doesn't 404
+        source: /*
+        destination: /index.html

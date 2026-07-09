@@ -1,0 +1,56 @@
+{
+  "ate": 0.1118,
+  "qini": 0.0905,
+  "deciles": [
+    {
+      "decile": 1,
+      "observed_uplift": 0.2299,
+      "n": 501
+    },
+    {
+      "decile": 2,
+      "observed_uplift": 0.2042,
+      "n": 500
+    },
+    {
+      "decile": 3,
+      "observed_uplift": 0.1235,
+      "n": 500
+    },
+    {
+      "decile": 4,
+      "observed_uplift": 0.1262,
+      "n": 500
+    },
+    {
+      "decile": 5,
+      "observed_uplift": 0.1611,
+      "n": 500
+    },
+    {
+      "decile": 6,
+      "observed_uplift": 0.1161,
+      "n": 500
+    },
+    {
+      "decile": 7,
+      "observed_uplift": 0.0667,
+      "n": 500
+    },
+    {
+      "decile": 8,
+      "observed_uplift": 0.0647,
+      "n": 500
+    },
+    {
+      "decile": 9,
+      "observed_uplift": 0.0063,
+      "n": 500
+    },
+    {
+      "decile": 10,
+      "observed_uplift": 0.0256,
+      "n": 500
+    }
+  ]
+}

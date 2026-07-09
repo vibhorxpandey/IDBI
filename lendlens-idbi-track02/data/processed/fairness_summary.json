@@ -1,0 +1,17 @@
+{
+  "protected_attribute": "gender",
+  "rule": "80% (four-fifths) rule",
+  "threshold": 0.8,
+  "disparate_impact_ratio": 0.96,
+  "passes": true,
+  "group_selection_rates": {
+    "F": 0.3459,
+    "M": 0.3604
+  },
+  "n_selected": 1767,
+  "n_total": 5001,
+  "adjusted": false,
+  "method": "none required",
+  "disparate_impact_ratio_after": 0.96,
+  "group_selection_rates_after": null
+}

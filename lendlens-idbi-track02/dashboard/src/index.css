@@ -1,31 +1,66 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  color-scheme: light;
-}
+:root { color-scheme: light dark; }
 
+html, body { min-height: 100%; }
 body {
-  @apply bg-slate-100 text-slate-800 antialiased;
+  font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color .3s ease, color .3s ease;
 }
 
-/* Slim scrollbars for the lead queue */
-.thin-scroll::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-.thin-scroll::-webkit-scrollbar-thumb {
-  @apply bg-slate-300 rounded-full;
-}
-.thin-scroll::-webkit-scrollbar-track {
-  @apply bg-transparent;
+/* ---------- LIGHT ---------- */
+body { @apply bg-slate-100 text-slate-800; }
+
+/* ---------- DARK (glass premium) ---------- */
+.dark body {
+  @apply text-ll-txt;
+  background-color: #070910;
+  background-image:
+    radial-gradient(820px 500px at 4% -6%, rgba(255,120,70,.16), transparent 55%),
+    radial-gradient(760px 620px at 102% 2%, rgba(62,139,255,.13), transparent 55%),
+    radial-gradient(900px 700px at 55% 118%, rgba(168,85,247,.12), transparent 60%);
+  background-attachment: fixed;
 }
 
-@keyframes ll-fade-up {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
+@layer components {
+  /* Frosted glass surface */
+  .glass {
+    @apply rounded-[20px] border;
+    border-color: rgba(15,23,42,.08);
+    background: rgba(255,255,255,.72);
+    backdrop-filter: blur(18px) saturate(150%);
+    -webkit-backdrop-filter: blur(18px) saturate(150%);
+    box-shadow: 0 1px 2px rgba(15,23,42,.04);
+  }
+  .dark .glass {
+    border-color: rgba(255,255,255,.08);
+    background: rgba(255,255,255,.04);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 24px 50px -28px rgba(0,0,0,.7);
+  }
+  .glass-hover { transition: background .18s ease, border-color .18s ease, transform .18s ease; }
+  .dark .glass-hover:hover { background: rgba(255,255,255,.06); }
+  .glass-hover:hover { background: rgba(255,255,255,.9); }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium;
+  }
 }
-.animate-fade-up {
-  animation: ll-fade-up 0.25s ease-out both;
-}
+
+/* Slim scrollbars */
+.thin-scroll::-webkit-scrollbar { width: 7px; height: 7px; }
+.thin-scroll::-webkit-scrollbar-thumb { @apply bg-slate-300 dark:bg-white/10 rounded-full; }
+.thin-scroll::-webkit-scrollbar-track { background: transparent; }
+
+@keyframes ll-fade-up { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes ll-scale-in { from { opacity: 0; transform: scale(.97); } to { opacity: 1; transform: scale(1); } }
+.animate-fade-up { animation: ll-fade-up .28s ease-out both; }
+.animate-scale-in { animation: ll-scale-in .2s ease-out both; }
+
+.dark .recharts-text { fill: #8b909e; }
+.recharts-text { fill: #64748b; }

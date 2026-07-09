@@ -1,0 +1,14 @@
+# LendLens — FULL ML pipeline dependencies (run locally to generate
+# data/processed/leads.json via `python run_all.py`). Includes the runtime API
+# deps too, so this is the only file a developer needs for the whole project.
+-r requirements.txt
+
+numpy==1.26.4
+pandas==2.2.2
+scikit-learn==1.4.2
+xgboost==2.0.3
+shap==0.45.1
+scikit-uplift==0.5.1
+fairlearn==0.10.0
+matplotlib==3.8.4
+faker==25.8.0

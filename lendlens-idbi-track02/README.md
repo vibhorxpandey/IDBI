@@ -104,7 +104,7 @@ cd lendlens-idbi-track02
 # 2. Python environment
 python -m venv .venv
 #   Windows: .venv\Scripts\activate      POSIX: source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r requirements-ml.txt   # full ML pipeline (the API alone needs only requirements.txt)
 
 # 3. Run the whole pipeline (generate → train → explain → score)
 python run_all.py            # or:  make all

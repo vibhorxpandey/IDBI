@@ -1,19 +1,10 @@
-# LendLens — pinned Python dependencies
-# Target: Python 3.11 (spec) — built & verified on Python 3.12.
-# Everything here installs from PyPI wheels with NO network access needed at
-# runtime; the pipeline itself makes zero external calls.
-
-numpy==1.26.4
-pandas==2.2.2
-scikit-learn==1.4.2
-xgboost==2.0.3
-shap==0.45.1
-scikit-uplift==0.5.1
-fairlearn==0.10.0
-matplotlib==3.8.4
-faker==25.8.0
-
-# API layer
+# LendLens — RUNTIME API dependencies only.
+# The API just serves the pre-computed data/processed/*.json (no ML at request
+# time), so this stays tiny — which keeps it under Vercel's serverless size
+# limit and makes Render/Railway builds fast.
+#
+# To GENERATE the data (run the ML pipeline locally) install the heavier stack:
+#     pip install -r requirements-ml.txt
 fastapi==0.111.0
 uvicorn[standard]==0.30.1
 pydantic==2.7.4

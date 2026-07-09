@@ -11,6 +11,11 @@ __pycache__/
 data/synthetic/*.csv
 data/processed/*
 !data/processed/.gitkeep
+!data/processed/leads.json
+!data/processed/uplift_curve.json
+!data/processed/fairness_summary.json
+
+
 # docs/uplift_curve.png is intentionally TRACKED — it's the README's hero image
 
 # --- Optional raw dataset (large, user-supplied) ---
@@ -27,3 +32,7 @@ dashboard/.vite/
 .DS_Store
 Thumbs.db
 .env
+
+# --- Local scratch / bundles (not for the repo) ---
+*.zip
+gitignore-patch.txt
