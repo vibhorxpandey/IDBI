@@ -264,6 +264,19 @@ This prototype was built for the sandbox phase. The path to production inside ID
 
 ---
 
+## Team
+
+Built for **IDBI Innovate 2026 · Track 02** (Lead Generation / Behavioural Analytics / Retail Lending).
+
+| Member | Focus |
+|---|---|
+| **Vibhor Pandey** | Engineering · ML pipeline · dashboard · deployment |
+| _Add teammate_ | _Research & compliance_ |
+| _Add teammate_ | _Pitch deck & narrative_ |
+| _Add teammate_ | _Domain / lending input_ |
+
+---
+
 ## License / status
 
 Round-1 hackathon prototype — public-ready, documented, and reproducible.
