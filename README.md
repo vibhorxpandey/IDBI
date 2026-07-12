@@ -1,3 +1,6 @@
+YOUTUBE LIVE LINK : https://youtu.be/U11B5rlBy4o?si=pTFr-G9i7H9hmOxC
+LIVE PROTOTYPE LINK : https://lendlens-idbi-track02.vercel.app/
+
 # LendLens — Consent First Pre-Approved Offer Engine
 
 **IDBI Innovate 2026 · Track 02 (Lead Generation / Behavioural Analytics / Retail Lending) · Round-1 Prototype**
