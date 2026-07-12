@@ -2,6 +2,9 @@
 
 **IDBI Innovate 2026 · Track 02 (Lead Generation / Behavioural Analytics / Retail Lending) · Round-1 Prototype**
 
+### 🌐 Live demo → **https://lendlens-idbi-track02.vercel.app**
+Opens on any device — no install, no login. Frontend + FastAPI backend on a single Vercel deployment.
+
 > **The right offer, to the right customer, at the right time — with a reason the
 > Relationship Manager can say out loud.**
 
@@ -241,6 +244,9 @@ Run the dashboard (`npm run dev`) and drop screenshots into `docs/screenshots/`:
 
 ## Architecture, Layout, and Deployment
 
+- **Live on Vercel:** https://lendlens-idbi-track02.vercel.app — a single deployment
+  serves the static dashboard and the FastAPI backend as a Python serverless
+  function under `/api` (config in [`vercel.json`](vercel.json)).
 - See [`docs/architecture.md`](docs/architecture.md) for the layer-by-layer design.
 - See [`docs/deployment_notes.md`](docs/deployment_notes.md) for hosting guidance.
 
