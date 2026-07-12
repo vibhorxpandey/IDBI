@@ -271,9 +271,9 @@ Built for **IDBI Innovate 2026 · Track 02** (Lead Generation / Behavioural Anal
 | Member | Focus |
 |---|---|
 | **Vibhor Pandey** | Engineering · ML pipeline · dashboard · deployment |
-| _Add teammate_ | _Research & compliance_ |
-| _Add teammate_ | _Pitch deck & narrative_ |
-| _Add teammate_ | _Domain / lending input_ |
+| **Bhavya Dubey** | Research & compliance — Account Aggregator · RBI Digital Lending · DPDP |
+| **Rohit Singh Rajawat** | Pitch deck, narrative & demo script |
+| **Yuvraj Arora** | Retail-lending domain input · fairness & metrics review |
 
 ---
 
